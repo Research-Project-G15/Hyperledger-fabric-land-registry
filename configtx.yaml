@@ -1,0 +1,155 @@
+# Channel configuration
+
+Organizations:
+  - &OrdererOrg
+      Name: OrdererOrg
+      ID: OrdererMSP
+      MSPDir: organizations/ordererOrganizations/landregistry.lk/msp
+      Policies:
+          Readers:
+              Type: Signature
+              Rule: "OR('OrdererMSP.member')"
+          Writers:
+              Type: Signature
+              Rule: "OR('OrdererMSP.member')"
+          Admins:
+              Type: Signature
+              Rule: "OR('OrdererMSP.admin')"
+      OrdererEndpoints:
+          - orderer.landregistry.lk:7050
+
+  - &LandRegistry
+      Name: LandRegistryMSP
+      ID: LandRegistryMSP
+      MSPDir: organizations/peerOrganizations/landregistry.lk/msp
+      Policies:
+          Readers:
+              Type: Signature
+              Rule: "OR('LandRegistryMSP.admin', 'LandRegistryMSP.peer', 'LandRegistryMSP.client')"
+          Writers:
+              Type: Signature
+              Rule: "OR('LandRegistryMSP.admin', 'LandRegistryMSP.client')"
+          Admins:
+              Type: Signature
+              Rule: "OR('LandRegistryMSP.admin')"
+          Endorsement:
+              Type: Signature
+              Rule: "OR('LandRegistryMSP.peer')"
+
+  - &Bank
+      Name: BankMSP
+      ID: BankMSP
+      MSPDir: organizations/peerOrganizations/bank.lk/msp
+      Policies:
+          Readers:
+              Type: Signature
+              Rule: "OR('BankMSP.admin', 'BankMSP.peer', 'BankMSP.client')"
+          Writers:
+              Type: Signature
+              Rule: "OR('BankMSP.admin', 'BankMSP.client')"
+          Admins:
+              Type: Signature
+              Rule: "OR('BankMSP.admin')"
+          Endorsement:
+              Type: Signature
+              Rule: "OR('BankMSP.peer')"
+
+Capabilities:
+    Channel: &ChannelCapabilities
+        V2_0: true
+    Orderer: &OrdererCapabilities
+        V2_0: true
+    Application: &ApplicationCapabilities
+        V2_5: true
+
+Application: &ApplicationDefaults
+    Organizations:
+    Policies:
+        Readers:
+            Type: ImplicitMeta
+            Rule: "ANY Readers"
+        Writers:
+            Type: ImplicitMeta
+            Rule: "ANY Writers"
+        Admins:
+            Type: ImplicitMeta
+            Rule: "MAJORITY Admins"
+        LifecycleEndorsement:
+            Type: ImplicitMeta
+            Rule: "MAJORITY Endorsement"
+        Endorsement:
+            Type: ImplicitMeta
+            Rule: "MAJORITY Endorsement"
+    Capabilities:
+        <<: *ApplicationCapabilities
+
+Orderer: &OrdererDefaults
+    OrdererType: etcdraft
+    Addresses:
+        - orderer.landregistry.lk:7050
+    EtcdRaft:
+        Consenters:
+        - Host: orderer.landregistry.lk
+          Port: 7050
+          ClientTLSCert: organizations/ordererOrganizations/landregistry.lk/orderers/orderer.landregistry.lk/tls/server.crt
+          ServerTLSCert: organizations/ordererOrganizations/landregistry.lk/orderers/orderer.landregistry.lk/tls/server.crt
+    BatchTimeout: 2s
+    BatchSize:
+        MaxMessageCount: 10
+        AbsoluteMaxBytes: 99 MB
+        PreferredMaxBytes: 512 KB
+    Organizations:
+    Policies:
+        Readers:
+            Type: ImplicitMeta
+            Rule: "ANY Readers"
+        Writers:
+            Type: ImplicitMeta
+            Rule: "ANY Writers"
+        Admins:
+            Type: ImplicitMeta
+            Rule: "MAJORITY Admins"
+        BlockValidation:
+            Type: ImplicitMeta
+            Rule: "ANY Writers"
+    Capabilities:
+        <<: *OrdererCapabilities
+
+Channel: &ChannelDefaults
+    Policies:
+        Readers:
+            Type: ImplicitMeta
+            Rule: "ANY Readers"
+        Writers:
+            Type: ImplicitMeta
+            Rule: "ANY Writers"
+        Admins:
+            Type: ImplicitMeta
+            Rule: "MAJORITY Admins"
+    Capabilities:
+        <<: *ChannelCapabilities
+
+Profiles:
+    TwoOrgsApplicationGenesis:
+        <<: *ChannelDefaults
+        Orderer:
+            <<: *OrdererDefaults
+            Organizations:
+                - *OrdererOrg
+            Capabilities: *OrdererCapabilities
+        Application:
+            <<: *ApplicationDefaults
+            Organizations:
+                - *LandRegistry
+                - *Bank
+            Capabilities: *ApplicationCapabilities
+
+    TwoOrgsChannel:
+        Consortium: SampleConsortium
+        <<: *ChannelDefaults
+        Application:
+            <<: *ApplicationDefaults
+            Organizations:
+                - *LandRegistry
+                - *Bank
+            Capabilities: *ApplicationCapabilities

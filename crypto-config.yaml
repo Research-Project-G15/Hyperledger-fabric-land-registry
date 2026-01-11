@@ -1,0 +1,34 @@
+# Crypto configuration for generating certificates and keys
+
+OrdererOrgs:
+  - Name: Orderer
+    Domain: landregistry.lk
+    EnableNodeOUs: true
+    Specs:
+      - Hostname: orderer
+        SANS:
+          - localhost
+          - 127.0.0.1
+
+PeerOrgs:
+  - Name: LandRegistry
+    Domain: landregistry.lk
+    EnableNodeOUs: true
+    Template:
+      Count: 1
+      SANS:
+        - localhost
+        - 127.0.0.1
+    Users:
+      Count: 1
+
+  - Name: Bank
+    Domain: bank.lk
+    EnableNodeOUs: true
+    Template:
+      Count: 1
+      SANS:
+        - localhost
+        - 127.0.0.1
+    Users:
+      Count: 1

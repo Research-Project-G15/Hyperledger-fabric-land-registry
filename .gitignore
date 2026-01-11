@@ -1,0 +1,33 @@
+﻿# Generated crypto materials (NEVER commit these!)
+organizations/
+channel-artifacts/*.block
+channel-artifacts/*.tx
+
+# Chaincode packages
+*.tar.gz
+
+# Docker volumes
+.fabric/
+
+# Logs
+*.log
+
+# Binaries
+bin/
+builders/
+config/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Temporary files
+*.swp
+*.swo
+*~
+
+Done.
